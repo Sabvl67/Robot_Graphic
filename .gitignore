@@ -1,0 +1,21 @@
+# Build artifacts
+*.o
+graphics_program
+graphics_program.exe
+
+# CMake build directory
+build/
+cmake-build-*/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db

@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew list:*)",
+      "Bash(brew install:*)",
+      "Bash(make clean:*)",
+      "Bash(make:*)",
+      "Bash(brew --prefix:*)",
+      "Bash(tree:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
