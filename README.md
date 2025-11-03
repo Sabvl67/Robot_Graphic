@@ -22,6 +22,17 @@ CompGraph_P/
 └── README.md
 ```
 
+
+```
+Base (root)
+ └─ Torso (translate up from base)
+     ├─ Head (translate up from torso, rotate on Y-axis)
+     ├─ Left Arm (translate left from torso, rotate on Z-axis for lifting)
+     │   └─ Left Hand (translate from arm end)
+     └─ Right Arm (translate right from torso, rotate on Z-axis)
+         └─ Right Hand (translate from arm end)
+```
+
 ## Prerequisites
 
 ### Linux (Comp Lab)
@@ -38,7 +49,11 @@ sudo dnf install gcc-c++ glfw-devel mesa-libGL-devel
 
 # Arch Linux
 sudo pacman -S base-devel glfw-x11 mesa
+
+# OpenGL Maths
+sudo apt-get install libglm-dev
 ```
+
 
 ### macOS
 
