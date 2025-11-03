@@ -28,7 +28,7 @@ ifeq ($(UNAME_S),Darwin)
 endif
 
 # Source files
-SOURCES = src/main.cpp src/glad.c
+SOURCES = src/main.cpp src/glad.c src/shader.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)
