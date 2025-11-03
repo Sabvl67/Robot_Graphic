@@ -6,6 +6,8 @@
 #include <iostream>
 
 using namespace std;
+
+
 // Callback function for window resize
 void framebuffer_size_callback(GLFWwindow* /*window*/, int width, int height) {
     glViewport(0, 0, width, height);
@@ -20,7 +22,7 @@ void processInput(GLFWwindow *window) {
 int main() {
     // Initialize GLFW
     if (!glfwInit()) {
-        std::cerr << "Failed to initialize GLFW" << std::endl;
+        cerr << "Failed to initialize GLFW" << endl;
         return -1;
     }
 
@@ -36,7 +38,7 @@ int main() {
     // Create window
     GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Graphics Project", NULL, NULL);
     if (window == NULL) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        cerr << "Failed to create GLFW window" << endl;
         glfwTerminate();
         return -1;
     }
@@ -45,22 +47,22 @@ int main() {
 
     // Load OpenGL function pointers with GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
+        cerr << "Failed to initialize GLAD" << endl;
         return -1;
     }
 
     // Print OpenGL version
-    std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+    cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;
     cout << "Testing GLM" << "\n";
     glm::vec3 testVec(1.0f, 2.0f, 3.0f);
     glm::mat4 identityMatrix = glm::mat4(1.0f);
     glm::mat4 translationMatrix = glm::translate(identityMatrix, testVec);
-    std::cout << "✓ GLM is working!" << std::endl;
-    std::cout << "Test vector: (" << testVec.x << ", " << testVec.y << ", " << testVec.z << ")" << std::endl;
-    std::cout << "Translation matrix[3][0]: " << translationMatrix[3][0] << std::endl;
-    std::cout << "==================\n" << std::endl;
-    std::cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << std::endl;
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << std::endl;
+    cout << "✓ GLM is working!" << endl;
+    cout << "Test vector: (" << testVec.x << ", " << testVec.y << ", " << testVec.z << ")" << endl;
+    cout << "Translation matrix[3][0]: " << translationMatrix[3][0] << endl;
+    cout << "==================\n" << endl;
+    cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
+    cout << "Renderer: " << glGetString(GL_RENDERER) << endl;
 
     // Set viewport
     glViewport(0, 0, 800, 600);
