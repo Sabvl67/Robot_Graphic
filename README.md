@@ -144,7 +144,7 @@ make
 1. Add `.cpp` files to the `src/` directory
 2. Update the `SOURCES` variable in `Makefile`:
    ```makefile
-   SOURCES = src/main.cpp src/glad.c src/your_file.cpp
+   SOURCES = src/main.cpp src/glad.c src/file.cpp
    ```
 3. For CMake, update `CMakeLists.txt`:
    ```cmake
@@ -161,16 +161,13 @@ Place custom header files in the `include/` directory. They will be automaticall
 
 ## OpenGL Version
 
-This project is configured for OpenGL 3.3 Core Profile, which is widely supported. You can modify the version in [src/main.cpp](src/main.cpp):
+This project is configured for OpenGL 3.3 Core Profile, modify the version in [src/main.cpp](src/main.cpp):
 
 ```cpp
 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 ```
 
-## Controls
-
-- **ESC**: Close the window
 
 ## Notes for Comp Lab Submission
 
@@ -184,7 +181,3 @@ glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 - [GLFW Documentation](https://www.glfw.org/documentation.html)
 - [OpenGL Reference](https://www.khronos.org/opengl/wiki/)
 - [Learn OpenGL](https://learnopengl.com/)
-
-## License
-
-Educational project for computer graphics coursework.
