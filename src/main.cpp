@@ -5,6 +5,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
+#include "shader.h"
+#include "cube.h"
 using namespace std;
 
 
@@ -52,17 +54,40 @@ int main() {
     }
 
     // Print OpenGL version
-    cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;
-    cout << "Testing GLM" << "\n";
-    glm::vec3 testVec(1.0f, 2.0f, 3.0f);
-    glm::mat4 identityMatrix = glm::mat4(1.0f);
-    glm::mat4 translationMatrix = glm::translate(identityMatrix, testVec);
-    cout << "✓ GLM is working!" << endl;
-    cout << "Test vector: (" << testVec.x << ", " << testVec.y << ", " << testVec.z << ")" << endl;
-    cout << "Translation matrix[3][0]: " << translationMatrix[3][0] << endl;
-    cout << "==================\n" << endl;
+    cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;  
     cout << "GLSL Version: " << glGetString(GL_SHADING_LANGUAGE_VERSION) << endl;
     cout << "Renderer: " << glGetString(GL_RENDERER) << endl;
+
+    glEnable(GL_DEPTH_TEST);
+
+    //shader
+    GLuint shaderProgram = loadShaderProgram("shaders/vertex_shader.glsl","shaders/fragment_shader.glsl");
+
+    GLuint cubeVAO = createCube();
+
+    glm::vec3 camPos = glm::vec3(3.0f, 3.0f, 5.0f);
+    glm::vec3 camTar = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::mat4 view = glm::lookAt(camPos, camTar, camUp);
+
+    // projection
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f);
+
+    // lighting
+    glm::vec3 lightPos(5.0f, 5.0f, 5.0f);
+    glm::vec3 lightCol(1.0f, 1.0f, 1.0f); 
+    glm::vec3 objectCol(0.8f, 0.3f, 0.3f);
+
+    // shader & uniforms
+    glUseProgram(shaderProgram);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, glm::value_ptr(lightPos));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightCol"), 1, glm::value_ptr(lightCol));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "objectCol"), 1, glm::value_ptr(objectCol));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "camPos"), 1, glm::value_ptr(camPos));
+
+
 
     // Set viewport
     glViewport(0, 0, 800, 600);
@@ -73,8 +98,18 @@ int main() {
         processInput(window);
 
         // Rendering commands
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        // glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+
+        glm::mat4 model = glm::mat4(1.0f);
+
+        glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+
+        glBindVertexArray(cubeVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36); 
 
         // Swap buffers and poll events
         glfwSwapBuffers(window);
