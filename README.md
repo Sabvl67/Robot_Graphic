@@ -36,11 +36,12 @@ Base (root)
 ### Using CMake
 
 ```bash
+
+# Compile and launch
+cmake -B build && cmake --build build && ./build/graphics_program
+
 # Build the project
 cmake -B build && cmake --build build && cmake --build build --target run
-
-#Shorthand to compile and launch
-cmake -B build && cmake --build build && ./build/graphics_program
 
 ```
 ### 🧩 Dependencies
