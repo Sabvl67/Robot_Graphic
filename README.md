@@ -31,8 +31,6 @@ Base (root)
          └─ Right Hand (translate from arm end)
 ```
 
-## Prerequisites
-
 ## Building the Project
 
 ### Using CMake
