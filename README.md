@@ -1,7 +1,5 @@
 # OpenGL Graphics Project
 
-A cross-platform OpenGL graphics project using GLFW and GLAD, compatible with both macOS and Linux.
-
 ## Project Structure
 
 ```
@@ -54,14 +52,9 @@ sudo pacman -S base-devel glfw-x11 mesa
 sudo apt-get install libglm-dev
 ```
 
-
-### macOS
-
-Install GLFW via Homebrew:
-
-```bash
-brew install glfw
-```
+ --recurse-submodules <your_repo_url>
+# or, if already cloned:
+git submodule update --init --recursive
 
 ## Building the Project
 
@@ -69,96 +62,27 @@ brew install glfw
 
 ```bash
 # Build the project
-make
+cmake -B build && cmake --build build && cmake --build build --target run
 
-# Run the program
-./graphics_program
+#Shorthand to compile and launch
+cmake -B build && cmake --build build && ./build/graphics_program
 
-# Or build and run in one command
-make run
-
-# Clean build artifacts
-make clean
-
-# Rebuild from scratch
-make rebuild
 ```
+### 🧩 Dependencies
 
-### Option 2: Using CMake
+- **GLFW** – included directly in the repo under `GLFW/` (not system-installed).  
+  CMake automatically builds it during compilation — no external setup needed.  
+- **OpenGL** – uses system’s default OpenGL library.  
 
-```bash
-# Create build directory
-mkdir build
-cd build
-
-# Configure and build
-cmake ..
-make
-
-# Run the program
-./graphics_program
 ```
-
-## Troubleshooting
-
-### Linux Comp Lab Issues
-
-**Problem: GLFW not found**
-```bash
-# Check if GLFW is installed
-pkg-config --modversion glfw3
-
-# If not installed, contact lab administrator or install locally
 ```
-
-**Problem: OpenGL driver issues**
-```bash
-# Check OpenGL version
-glxinfo | grep "OpenGL version"
-
-# Update graphics drivers if needed
-```
-
-**Problem: Missing libraries**
-```bash
-# Check what libraries the executable needs
-ldd graphics_program
-
-# Install missing dependencies
-```
-
-### macOS Issues
-
-**Problem: Framework not found**
-- Make sure Xcode Command Line Tools are installed:
-```bash
-xcode-select --install
-```
-
-**Problem: GLFW not found**
-- Install via Homebrew:
-```bash
-brew install glfw
-```
-
-## Running on Different Systems
-
-### Linux Comp Lab & macOS
-
-The Makefile automatically detects Linux and uses the correct linking flags. Simply:
-
-```bash
-make
-./graphics_program
-```
-
 ## Development
 
 ### Adding New Source Files
 
 1. Add `.cpp` files to the `src/` directory
 2. Update the `SOURCES` variable in `Makefile`:
-   ```makefile
+   ```makefiyourle
    SOURCES = src/main.cpp src/glad.c src/file.cpp
    ```
 3. For CMake, update `CMakeLists.txt`:
@@ -177,12 +101,6 @@ Place custom header files in the `include/` directory. They will be automaticall
 ## OpenGL Version
 
 This project is configured for OpenGL 3.3 Core Profile, modify the version in [src/main.cpp](src/main.cpp):
-
-```cpp
-glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-```
-
 
 ## Notes for Comp Lab Submission
 
