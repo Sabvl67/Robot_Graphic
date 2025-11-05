@@ -33,32 +33,9 @@ Base (root)
 
 ## Prerequisites
 
-### Linux (Comp Lab)
-
-Install required packages:
-
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install build-essential libglfw3-dev libgl1-mesa-dev
-
-# Fedora/RHEL
-sudo dnf install gcc-c++ glfw-devel mesa-libGL-devel
-
-# Arch Linux
-sudo pacman -S base-devel glfw-x11 mesa
-
-# OpenGL Maths
-sudo apt-get install libglm-dev
-```
-
- --recurse-submodules <your_repo_url>
-# or, if already cloned:
-git submodule update --init --recursive
-
 ## Building the Project
 
-### Option 1: Using Make (Recommended for Linux)
+### Using CMake
 
 ```bash
 # Build the project
@@ -74,8 +51,6 @@ cmake -B build && cmake --build build && ./build/graphics_program
   CMake automatically builds it during compilation — no external setup needed.  
 - **OpenGL** – uses system’s default OpenGL library.  
 
-```
-```
 ## Development
 
 ### Adding New Source Files
@@ -93,10 +68,6 @@ cmake -B build && cmake --build build && ./build/graphics_program
        src/abc.cpp
    )
    ```
-
-### Adding Header Files
-
-Place custom header files in the `include/` directory. They will be automatically included.
 
 ## OpenGL Version
 
