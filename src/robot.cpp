@@ -1,30 +1,21 @@
 #include "robot.h"
-
-//#include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
 using glm::mat4;
 using glm::vec3;
 
-// ---------------- Joint state ----------------
+// Joint state
 struct RobotJoints {
     float neck = 0.0f;
-
-    float shoulderL = 0.0f;  // rotate about Z for simplicity
-    float elbowL    = 0.0f;
-
-    float shoulderR = 0.0f;
-    float elbowR    = 0.0f;
-
-    float hipL  = 0.0f;
-    float kneeL = 0.0f;
-
-    float hipR  = 0.0f;
-    float kneeR = 0.0f;
+    float shoulderL = 0.0f, elbowL = 0.0f;
+    float shoulderR = 0.0f, elbowR = 0.0f;
+    float hipL = 0.0f, kneeL = 0.0f;
+    float hipR = 0.0f, kneeR = 0.0f;
+    float torsoRotation = 0.0f;
 };
 static RobotJoints gJ;
 
-// ---------------- Small helpers ----------------
+// Matrix helpers
 static mat4 I()                      { return mat4(1.0f); }
 static mat4 T(const vec3& t)         { return glm::translate(I(), t); }
 static mat4 S(const vec3& s)         { return glm::scale(I(), s); }
@@ -37,7 +28,6 @@ static void setMat4(GLuint program, const char* name, const mat4& M) {
     if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_FALSE, &M[0][0]);
 }
 static void setColor(GLuint program, const vec3& c) {
-    // your fragment shader uses "objectCol" (you set it in main.cpp)
     GLint loc = glGetUniformLocation(program, "objectCol");
     if (loc >= 0) glUniform3fv(loc, 1, &c[0]);
 }
@@ -55,11 +45,10 @@ static void drawCube(GLuint program,
     setColor(program, color);
 
     glBindVertexArray(cubeVAO);
-    // Your VAO draws a cube with 36 vertices using glDrawArrays:
     glDrawArrays(GL_TRIANGLES, 0, 36);
 }
 
-// ---------------- Sizes ----------------
+// Robot body part sizes
 static const vec3 TORSO = {1.0f, 1.6f, 0.5f};
 static const vec3 HEAD  = {0.5f, 0.5f, 0.5f};
 static const vec3 UARM  = {0.35f, 0.9f, 0.35f};
@@ -67,34 +56,30 @@ static const vec3 FARM  = {0.30f, 0.9f, 0.30f};
 static const vec3 THIGH = {0.45f, 1.0f, 0.45f};
 static const vec3 SHIN  = {0.40f, 1.0f, 0.40f};
 
-// ---------------- Public API ----------------
 void updateJointsFromInput(GLFWwindow* window, float dt)
 {
-    const float s = 60.0f * dt;   // degrees per second
+    const float s = 60.0f * dt;
 
-    // head
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) gJ.neck    += s;
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) gJ.neck    -= s;
 
-    // left arm
+    // Arms
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) gJ.shoulderL += s;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) gJ.shoulderL -= s;
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) gJ.elbowL    += s;
     if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) gJ.elbowL    -= s;
 
-    // right arm
     if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS) gJ.shoulderR += s;
     if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS) gJ.shoulderR -= s;
     if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) gJ.elbowR    += s;
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) gJ.elbowR    -= s;
 
-    // left leg
+    // Legs
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) gJ.hipL  += s;
     if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) gJ.hipL  -= s;
     if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS) gJ.kneeL += s;
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) gJ.kneeL -= s;
 
-    // right leg
     if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS) gJ.hipR  += s;
     if (glfwGetKey(window, GLFW_KEY_G) == GLFW_PRESS) gJ.hipR  -= s;
     if (glfwGetKey(window, GLFW_KEY_COMMA) == GLFW_PRESS) gJ.kneeR += s;
@@ -106,26 +91,24 @@ void drawRobot(GLuint program,
                const mat4& view,
                const mat4& proj)
 {
-    // Lift torso so feet aren’t under ground plane
-    mat4 torsoM = T({0, 1.0f, 0}) * S(TORSO);
+    mat4 torsoBase = T({0, 1.0f, 0}) * Ry(gJ.torsoRotation);
+
+    // Torso
+    mat4 torsoM = torsoBase * S(TORSO);
     drawCube(program, cubeVAO, torsoM, view, proj, {0.75f, 0.75f, 0.85f});
 
     // Head
-    const float torsoTopY = 1.0f + TORSO.y * 0.5f;
-    mat4 neckBase = T({0, torsoTopY, 0});
-    mat4 headM = neckBase
-               * Ry(gJ.neck)
-               * T({0, HEAD.y * 0.5f, 0})
-               * S(HEAD);
+    mat4 neckBase = torsoBase * T({0, TORSO.y * 0.5f, 0});
+    mat4 headM = neckBase * Ry(gJ.neck) * T({0, HEAD.y * 0.5f, 0}) * S(HEAD);
     drawCube(program, cubeVAO, headM, view, proj, {0.9f, 0.8f, 0.7f});
 
-    // Shoulders placement
-    const float shoulderY = 1.0f + TORSO.y * 0.35f;
+    // Arms
+    const float shoulderY = TORSO.y * 0.35f;
     const float shoulderX = (TORSO.x * 0.5f) + (UARM.x * 0.5f) * 0.9f;
 
     // Left arm
     {
-        mat4 shoulder = T({-shoulderX, shoulderY, 0});
+        mat4 shoulder = torsoBase * T({-shoulderX, shoulderY, 0});
         mat4 upper = shoulder
                    * Rz(gJ.shoulderL)
                    * T({0, -UARM.y * 0.5f, 0})
@@ -142,7 +125,7 @@ void drawRobot(GLuint program,
 
     // Right arm
     {
-        mat4 shoulder = T({+shoulderX, shoulderY, 0});
+        mat4 shoulder = torsoBase * T({+shoulderX, shoulderY, 0});
         mat4 upper = shoulder
                    * Rz(-gJ.shoulderR)
                    * T({0, -UARM.y * 0.5f, 0})
@@ -157,11 +140,11 @@ void drawRobot(GLuint program,
         drawCube(program, cubeVAO, fore, view, proj, {0.4f, 0.4f, 0.85f});
     }
 
-        // Hips
+    // Legs
     const float hipY = 1.0f - TORSO.y * 0.5f;
     const float hipX = TORSO.x * 0.3f;
 
-    // Left leg (forward/back: rotate about X. If it looks wrong, change Rx->Ry in all 3 lines)
+    // Left leg
     {
         mat4 hip = T({-hipX, hipY, 0});
         mat4 thigh = hip
@@ -178,7 +161,7 @@ void drawRobot(GLuint program,
         drawCube(program, cubeVAO, shin, view, proj, {0.35f, 0.8f, 0.35f});
     }
 
-    // Right leg (leave as-is or comment out if you don’t want to render it)
+    // Right leg
     {
         mat4 hip = T({+hipX, hipY, 0});
         mat4 thigh = hip
@@ -194,10 +177,22 @@ void drawRobot(GLuint program,
                   * S(SHIN);
         drawCube(program, cubeVAO, shin, view, proj, {0.25f, 0.7f, 0.25f});
     }
-} // <-- closes drawRobot()
+}
 
 void setLeftLeg(float hipDeg, float kneeDeg) {
     gJ.hipL  = hipDeg;
     gJ.kneeL = kneeDeg;
 }
 
+void setArms(float leftShoulderDeg, float rightShoulderDeg) {
+    gJ.shoulderL = leftShoulderDeg;
+    gJ.shoulderR = rightShoulderDeg;
+}
+
+void setHead(float neckDeg) {
+    gJ.neck = neckDeg;
+}
+
+void setTorsoRotation(float rotationDeg) {
+    gJ.torsoRotation = rotationDeg;
+}

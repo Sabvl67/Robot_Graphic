@@ -12,6 +12,8 @@
 #include "shader.h"
 #include "cube.h"
 #include "robot.h"
+#include "scene.h"
+#include "camera.h"
 using namespace std;
 
 
@@ -70,27 +72,18 @@ int main() {
 
     GLuint cubeVAO = createCube();
 
-    glm::vec3 camPos = glm::vec3(3.0f, 3.0f, 5.0f);
-    glm::vec3 camTar = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 camUp = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::mat4 view = glm::lookAt(camPos, camTar, camUp);
+    // Scene manager
+    SceneManager sceneManager;
+
+    // Camera system
+    Camera camera;
 
     // projection
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f);
 
-    // lighting
-    glm::vec3 lightPos(5.0f, 5.0f, 5.0f);
-    glm::vec3 lightCol(1.0f, 1.0f, 1.0f); 
-    glm::vec3 objectCol(0.8f, 0.3f, 0.3f);
-
-    // shader & uniforms
+    // shader & uniforms (projection doesn't change)
     glUseProgram(shaderProgram);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, glm::value_ptr(lightPos));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "lightCol"), 1, glm::value_ptr(lightCol));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "objectCol"), 1, glm::value_ptr(objectCol));
-    glUniform3fv(glGetUniformLocation(shaderProgram, "camPos"), 1, glm::value_ptr(camPos));
 
 
 
@@ -105,7 +98,11 @@ while (!glfwWindowShouldClose(window)) {
     lastTime = now;
 
     processInput(window);
-    updateJointsFromInput(window, deltaTime);  // keep if you use it
+
+    // Update robot joints only if not in free camera mode (to avoid key conflicts)
+    if (camera.getMode() != CameraMode::FREE) {
+        updateJointsFromInput(window, deltaTime);
+    }
 
     // --- persistent robot pose & animation state ---
     static float hipL_Ang  = 0.0f;
@@ -116,7 +113,34 @@ while (!glfwWindowShouldClose(window)) {
     static int   phase     = 0;       // 0 fwd, 1 hold fwd, 2 back, 3 hold neutral
     static float phaseTime = 0.0f;
 
-    // --- key handling (debounced here so you don't need to touch processInput) ---
+    // New animations
+    static bool armWave = false;      // W toggles arm wave
+    static bool headBob = false;      // B toggles head bobbing
+    static bool torsoSway = false;    // T toggles torso sway
+
+    // --- key handling ---
+    // Scene switching: 1, 2, 3
+    { static bool prev1 = false, prev2 = false, prev3 = false;
+      bool now1 = glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS;
+      bool now2 = glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS;
+      bool now3 = glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS;
+      if (now1 && !prev1) { sceneManager.setScene(SceneManager::DAY); cout << "Scene: Day" << endl; }
+      if (now2 && !prev2) { sceneManager.setScene(SceneManager::NIGHT); cout << "Scene: Night" << endl; }
+      if (now3 && !prev3) { sceneManager.setScene(SceneManager::SUNSET); cout << "Scene: Sunset" << endl; }
+      prev1 = now1; prev2 = now2; prev3 = now3;
+    }
+
+    // Camera mode switching: O, I, U
+    { static bool prevO = false, prevI = false, prevU = false;
+      bool nowO = glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS;
+      bool nowI = glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS;
+      bool nowU = glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS;
+      if (nowO && !prevO) camera.setMode(CameraMode::ORBIT);
+      if (nowI && !prevI) camera.setMode(CameraMode::STATIC_FRONT);
+      if (nowU && !prevU) camera.setMode(CameraMode::FREE);
+      prevO = nowO; prevI = nowI; prevU = nowU;
+    }
+
     // SPACE: toggle idle walk
     { static bool prev = false;
       bool now = glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS;
@@ -136,7 +160,32 @@ while (!glfwWindowShouldClose(window)) {
           hipL_Ang = 0.0f; kneeL_Ang = 0.0f;
           stepping = false; phase = 0; phaseTime = 0.0f;
           idleWalk = false;
+          armWave = false;
+          headBob = false;
+          torsoSway = false;
+          cout << "Reset: All animations stopped" << endl;
       }
+      prev = now;
+    }
+
+    // W: toggle arm wave animation
+    { static bool prev = false;
+      bool now = glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS;
+      if (now && !prev) { armWave = !armWave; cout << "Arm Wave: " << (armWave ? "ON" : "OFF") << endl; }
+      prev = now;
+    }
+
+    // B: toggle head bobbing animation
+    { static bool prev = false;
+      bool now = glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS;
+      if (now && !prev) { headBob = !headBob; cout << "Head Bob: " << (headBob ? "ON" : "OFF") << endl; }
+      prev = now;
+    }
+
+    // T: toggle torso rotation animation
+    { static bool prev = false;
+      bool now = glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS;
+      if (now && !prev) { torsoSway = !torsoSway; cout << "Torso Sway: " << (torsoSway ? "ON" : "OFF") << endl; }
       prev = now;
     }
 
@@ -179,24 +228,54 @@ while (!glfwWindowShouldClose(window)) {
         }
     }
 
-    // --- apply the pose once per frame ---
+    // --- arm wave animation ---
+    if (armWave) {
+        float t = (float)glfwGetTime();
+        float leftArm = 60.0f * sinf(1.5f * t);      // Wave up and down
+        float rightArm = 60.0f * sinf(1.5f * t + 3.14159f);  // Opposite phase
+        setArms(leftArm, rightArm);
+    } else {
+        setArms(0.0f, 0.0f);  // Reset to neutral
+    }
+
+    // --- head bobbing animation ---
+    if (headBob) {
+        float t = (float)glfwGetTime();
+        float headAngle = 15.0f * sinf(2.5f * t);    // Gentle nod
+        setHead(headAngle);
+    } else {
+        setHead(0.0f);  // Reset to neutral
+    }
+
+    // --- torso sway animation ---
+    if (torsoSway) {
+        float t = (float)glfwGetTime();
+        float torsoAngle = 10.0f * sinf(1.0f * t);   // Slow gentle sway
+        setTorsoRotation(torsoAngle);
+    } else {
+        setTorsoRotation(0.0f);  // Reset to neutral
+    }
+
+    // --- apply the leg pose once per frame ---
    setLeftLeg(hipL_Ang, kneeL_Ang);
 
-    // --- Orbit camera update (unchanged) ---
-    float t = (float)glfwGetTime();
-    float radius = 6.0f;
-    glm::vec3 camPos = glm::vec3(
-        radius * sinf(0.4f * t),
-        3.0f,
-        radius * cosf(0.4f * t)
-    );
-    glm::mat4 view = glm::lookAt(camPos, glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+    // --- Get current scene ---
+    const Scene& currentScene = sceneManager.getCurrentScene();
+
+    // --- Update camera ---
+    camera.update(window, deltaTime);
+    glm::mat4 view = camera.getViewMatrix();
+    glm::vec3 camPos = camera.getPosition();
+
+    // --- Update uniforms with scene properties and camera ---
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
     glUniform3fv(glGetUniformLocation(shaderProgram, "camPos"), 1, glm::value_ptr(camPos));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, glm::value_ptr(currentScene.lightPosition));
+    glUniform3fv(glGetUniformLocation(shaderProgram, "lightCol"), 1, glm::value_ptr(currentScene.lightColor));
 
     // --- draw ---
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(currentScene.backgroundColor.r, currentScene.backgroundColor.g, currentScene.backgroundColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glUseProgram(shaderProgram);
     drawRobot(shaderProgram, cubeVAO, view, projection);

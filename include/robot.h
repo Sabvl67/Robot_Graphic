@@ -18,8 +18,9 @@ void drawRobot(GLuint program,
                const glm::mat4& proj);
 
 
-void setLeftLeg (float hipDeg, float kneeDeg);
+void setLeftLeg(float hipDeg, float kneeDeg);
 
-//void setRightLeg (float hipDeg, float kneeDeg);
-
-            
+// Animation control functions
+void setArms(float leftShoulderDeg, float rightShoulderDeg);
+void setHead(float neckDeg);
+void setTorsoRotation(float rotationDeg);

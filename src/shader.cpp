@@ -6,7 +6,6 @@
 
 using namespace std;
 
-// read shader files
 string loadShader(const char* filePath) {
     string shaderCode;
     ifstream shaderFile;
@@ -25,7 +24,6 @@ string loadShader(const char* filePath) {
     return shaderCode;
 }
 
-// compile shader
 GLuint compileShader(const char* shaderSource, GLenum shaderType){
     GLuint shader = glCreateShader(shaderType);
     glShaderSource(shader, 1, &shaderSource, NULL);
@@ -41,17 +39,12 @@ GLuint compileShader(const char* shaderSource, GLenum shaderType){
     return shader;
 }
 
-// Link shader into the program
-// combine vertex + fragment into one program
-// create program, attach both shaders, link them into 1 GPU, check linking errors, dlt individual shaders
-
 GLuint CreateShaderProgram(GLuint vertexShader, GLuint fragmentShader) {
     GLuint program = glCreateProgram();
     glAttachShader(program, vertexShader);
     glAttachShader(program, fragmentShader);
     glLinkProgram(program);
 
-    // Linking errors check
     GLint success;
     glGetProgramiv(program, GL_LINK_STATUS, &success);
     if (!success) {
@@ -65,8 +58,7 @@ GLuint CreateShaderProgram(GLuint vertexShader, GLuint fragmentShader) {
     return program;
 }
 
-// Combine all 3 above
-GLuint loadShaderProgram (const char* vertexPath, const char* fragmentPath){
+GLuint loadShaderProgram(const char* vertexPath, const char* fragmentPath){
     string vertexCode = loadShader(vertexPath);
     string fragmentCode = loadShader(fragmentPath);
 

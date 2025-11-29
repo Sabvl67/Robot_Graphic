@@ -44,40 +44,65 @@ cmake -B build && cmake --build build && ./build/graphics_program
 cmake -B build && cmake --build build && cmake --build build --target run
 
 ```
-### 🧩 Dependencies
 
-- **GLFW** – included directly in the repo under `GLFW/` (not system-installed).  
-  CMake automatically builds it during compilation — no external setup needed.  
-- **OpenGL** – uses system’s default OpenGL library.  
+## Controls
 
-## Development
+### Scene Selection
+- **`1`** - Day Scene (bright daylight with white-yellow sun)
+- **`2`** - Night Scene (dark with cool blue moonlight)
+- **`3`** - Sunset Scene (warm orange-red lighting)
 
-### Adding New Source Files
+### Camera Modes
+- **`O`** - Orbit Camera (rotates around robot automatically)
+- **`I`** - Static Front Camera (fixed front view)
+- **`U`** - Free Camera (WASD to move, Arrow Keys to look, Q/E for up/down)
 
-1. Add `.cpp` files to the `src/` directory
-2. Update the `SOURCES` variable in `Makefile`:
-   ```makefiyourle
-   SOURCES = src/main.cpp src/glad.c src/file.cpp
-   ```
-3. For CMake, update `CMakeLists.txt`:
-   ```cmake
-   set(SOURCES
-       src/main.cpp
-       src/glad.c
-       src/abc.cpp
-   )
-   ```
+**Note:** In Free Camera mode (U), manual joint controls are disabled to avoid key conflicts.
 
-## OpenGL Version
+### Robot Animations
+**Automatic Animations (Toggle ON/OFF):**
+- **`SPACE`** - Toggle idle walk animation (leg walking motion)
+- **`W`** - Toggle arm wave animation (both arms wave up and down)
+- **`B`** - Toggle head bobbing animation (gentle nod)
+- **`T`** - Toggle torso sway animation (gentle body rotation)
 
-This project is configured for OpenGL 3.3 Core Profile, modify the version in [src/main.cpp](src/main.cpp):
+**Manual Controls:**
+- **`P`** - Trigger one-step animation (single step sequence)
+- **`R`** - Reset robot pose (all joints to neutral, stop all animations)
 
-## Notes for Comp Lab Submission
+### Manual Joint Control
+*(Not available in Free Camera mode)*
+**Head:**
+- `Q` / `E` - Rotate head left/right
 
-- The project includes all necessary headers (GLAD, GLFW)
-- Only GLFW library needs to be installed on the system
-- The Makefile works with standard `g++` compiler
-- No special permissions or dependencies required
+**Left Arm:**
+- `A` / `S` - Shoulder rotation
+- `Z` / `X` - Elbow rotation
+
+**Right Arm:**
+- `K` / `J` - Shoulder rotation
+- `M` / `N` - Elbow rotation
+
+**Left Leg:**
+- `D` / `F` - Hip rotation
+- `C` / `V` - Knee rotation
+
+**Right Leg:**
+- `G` / `H` - Hip rotation
+- `,` / `.` - Knee rotation
+
+**General:**
+- **`ESC`** - Exit program
+
+## Features
+
+### Implemented
+- ✅ **3+ Distinct Scenes** - Day, Night, and Sunset environments with different lighting
+- ✅ **3+ Camera Modes** - Orbit, Static Front, and Free camera with full control
+- ✅ **5+ Smooth Animations** - Idle walk, one-step, arm wave, head bob, and torso sway (all time-based and smooth)
+- ✅ **Phong Lighting** - Ambient, diffuse, and specular shading with material properties
+- ✅ **Hierarchical Robot Model** - Articulated body with proper parent-child transformations
+- ✅ **Manual Joint Control** - Full control over all robot joints
 
 ## Resources
 

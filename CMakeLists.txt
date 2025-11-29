@@ -31,6 +31,8 @@ set(SOURCES
     src/shader.cpp
     src/cube.cpp
     src/robot.cpp
+    src/scene.cpp
+    src/camera.cpp
 )
 
 # --- Executable ---

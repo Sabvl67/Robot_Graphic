@@ -3,15 +3,9 @@
 
 using namespace std;
 
-// src: https://www.opengl-tutorial.org/beginners-tutorials/tutorial-4-a-colored-cube/
-
-// Construct geometry cube as a base for robot body parts
-// cube: 8 corners, 6 faces, 12 tri, 36 vertices
-
-// VAO - Object store vertext bindings, unit cube
+// Creates a unit cube VAO with positions and normals
 GLuint createCube() {
-    // vertex = pos(3 fl) + normalization (3 fl)
-    // 36 vertices
+    // Each vertex: 3 floats (position) + 3 floats (normal)
     float vertices[] = {
         // Front face (Z+)
         -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
@@ -66,21 +60,18 @@ GLuint createCube() {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
 
-    // Bind VAO
     glBindVertexArray(VAO);
-
-    // Upload certex to VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    // Position attribute
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Normal attribute (loc = 1)
+    // Normal attribute
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    // Unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
